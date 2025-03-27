@@ -5,9 +5,10 @@ export interface Dog {
   age: number
   zip_code: string
   breed: string
+  location?: Locations
 }
 
-export interface Location {
+export interface Locations {
   zip_code: string
   latitude: number
   longitude: number

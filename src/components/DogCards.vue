@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
-import type { Dog } from './definitions'
+import { ref, watch, watchEffect } from 'vue'
+import type { Dog, Locations } from './definitions'
 
 const props = defineProps({
   dogList: {
@@ -33,16 +33,14 @@ const getDogs = async () => {
 
     splitArray.forEach(async (dogArray) => {
       const result = await fetchDogs(dogArray)
-      console.log(dogArray)
-      console.log(result)
-      result.forEach((canine) => {
-        combinedArray.push(canine)
-      })
+      combinedArray.push(...result)
     })
 
     console.log(combinedArray)
 
     dogs.value = combinedArray
+
+    console.log(dogs.value)
     return
   }
 
@@ -62,8 +60,8 @@ const fetchDogs = async (dogIDs: Array<string>) => {
 
     if (response.ok) {
       const dogPack: Dog[] = await response.json()
-
-      return dogPack
+      const newDogPack = await setLocations(dogPack)
+      return newDogPack
     }
 
     throw new Error(response.statusText)
@@ -74,11 +72,47 @@ const fetchDogs = async (dogIDs: Array<string>) => {
   return []
 }
 
+const setLocations = async (dogList: Array<Dog>) => {
+  const zipCodes: Array<string> = []
+  const updatedDogList = dogList
+
+  updatedDogList.forEach((dog) => {
+    zipCodes.push(dog.zip_code)
+  })
+
+  try {
+    const response = await fetch('https://frontend-take-home-service.fetch.com/locations', {
+      method: 'post',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(zipCodes),
+    })
+
+    if (!response.ok) {
+      throw new Error(response.statusText)
+    }
+
+    const locations: Locations[] = await response.json()
+
+    updatedDogList.forEach((dog) => [
+      (dog.location = locations.find((location) => location.zip_code === dog.zip_code)),
+    ])
+  } catch (error) {
+    console.log(error)
+  }
+  return updatedDogList
+}
+
 watchEffect(async () => {
   if (props.dogList) {
     await getDogs()
   }
 })
+//TODO add favorites button
+
+//TODO split cards into seperate component
 </script>
 
 <template>
@@ -91,7 +125,7 @@ watchEffect(async () => {
         <span>Age: {{ dog.age }}</span>
       </v-card-subtitle>
       <v-card-text>
-        <div>{{ dog.zip_code }}</div>
+        <div>{{ dog.location?.city }}, {{ dog.location?.state }} {{ dog.zip_code }}</div>
       </v-card-text>
     </v-card>
   </div>

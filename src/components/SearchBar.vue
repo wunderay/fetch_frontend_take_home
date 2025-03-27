@@ -60,6 +60,8 @@ function handleReset() {
 onBeforeMount(async () => {
   await getBreeds()
 })
+
+//TODO add better location search
 </script>
 
 <template>
@@ -109,10 +111,10 @@ onBeforeMount(async () => {
     </v-range-slider>
     <v-select
       label="Sort"
-      :items="['Breed:Desc', 'Breed:Asc', 'Name:Desc', 'Name:Asc', 'Age:Desc', 'Age:Asc']"
+      :items="['breed:desc', 'breed:asc', 'name:desc', 'name:asc', 'age:desc', 'age:asc']"
       v-model="sort"
     ></v-select>
-    <v-select label="Number of Results" :items="[25, 50, 75, 100, 1000]" v-model="size"></v-select>
+    <v-select label="Number of Results" :items="[25, 50, 75, 100]" v-model="size"></v-select>
     <v-btn class="me-4" type="submit"> submit </v-btn>
 
     <v-btn @click="handleReset"> clear </v-btn>
