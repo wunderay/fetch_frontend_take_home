@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { onBeforeMount, ref } from 'vue'
 import type { SearchQuery } from './definitions'
-// import type { SearchResults } from './definitions'
 
-// const searchResults: ModelRef<SearchResults> = defineModel()
 const breeds = ref([''])
 const valid = defineModel<boolean>('valid')
 const range = ref([0, 20])
@@ -60,65 +58,86 @@ function handleReset() {
 onBeforeMount(async () => {
   await getBreeds()
 })
-
-//TODO add better location search
 </script>
 
 <template>
-  <v-form v-model="valid" @submit.prevent="handleSubmit">
-    <v-autocomplete
-      label="Breed"
-      :items="breeds"
-      clearable
-      multiple
-      chips
-      v-model="selectedBreeds"
-    ></v-autocomplete>
-    <v-text-field clearable label="Zipcode"></v-text-field>
-    <v-range-slider
-      v-model="range"
-      :max="20"
-      :min="0"
-      :step="1"
-      class="align-center"
-      hide-details
-      strict
-      label="Age Range"
-      thumb-label="always"
-    >
-      <template v-slot:prepend>
-        <v-text-field
-          v-model="range[0]"
-          density="compact"
-          style="width: 100px"
-          type="number"
-          variant="outlined"
-          hide-details
-          single-line
-        ></v-text-field>
-      </template>
-      <template v-slot:append>
-        <v-text-field
-          v-model="range[1]"
-          density="compact"
-          style="width: 100px"
-          type="number"
-          variant="outlined"
-          hide-details
-          single-line
-        ></v-text-field>
-      </template>
-    </v-range-slider>
-    <v-select
-      label="Sort"
-      :items="['breed:desc', 'breed:asc', 'name:desc', 'name:asc', 'age:desc', 'age:asc']"
-      v-model="sort"
-    ></v-select>
-    <v-select label="Number of Results" :items="[25, 50, 75, 100]" v-model="size"></v-select>
-    <v-btn class="me-4" type="submit"> submit </v-btn>
-
-    <v-btn @click="handleReset"> clear </v-btn>
-  </v-form>
+  <v-container>
+    <v-sheet>
+      <v-form v-model="valid" @submit.prevent="handleSubmit">
+        <v-row>
+          <v-col cols="12" md="8">
+            <v-autocomplete
+              label="Breed"
+              :items="breeds"
+              clearable
+              multiple
+              chips
+              v-model="selectedBreeds"
+            ></v-autocomplete>
+          </v-col>
+          <v-col cols="12" md="4"> <v-text-field clearable label="Zipcode"></v-text-field> </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12" md="6">
+            <v-range-slider
+              v-model="range"
+              :max="20"
+              :min="0"
+              :step="1"
+              class="align-center"
+              hide-details
+              strict
+              label="Age Range"
+              thumb-label="always"
+            >
+              <template v-slot:prepend>
+                <v-text-field
+                  v-model="range[0]"
+                  density="compact"
+                  style="width: 100px"
+                  type="number"
+                  variant="outlined"
+                  hide-details
+                  single-line
+                ></v-text-field>
+              </template>
+              <template v-slot:append>
+                <v-text-field
+                  v-model="range[1]"
+                  density="compact"
+                  style="width: 100px"
+                  type="number"
+                  variant="outlined"
+                  hide-details
+                  single-line
+                ></v-text-field>
+              </template>
+            </v-range-slider>
+          </v-col>
+          <v-col cols="6" md="2">
+            <v-select
+              label="Sort"
+              :items="['breed:desc', 'breed:asc', 'name:desc', 'name:asc', 'age:desc', 'age:asc']"
+              v-model="sort"
+            ></v-select>
+          </v-col>
+          <v-col cols="6" md="2">
+            <v-select
+              label="# of Results"
+              :items="[25, 50, 75, 100, 101]"
+              v-model="size"
+            ></v-select>
+          </v-col>
+          <v-col cols="12" md="2" align-self="center">
+            <v-row>
+              <v-btn class="me-4" type="submit"> submit </v-btn>
+              <v-btn @click="handleReset"> clear </v-btn>
+            </v-row>
+          </v-col>
+        </v-row>
+      </v-form>
+    </v-sheet>
+  </v-container>
 </template>
 
 <style lang="css" scoped></style>
