@@ -21,26 +21,20 @@ async function logout() {
         'Content-Type': 'application/json',
       },
     })
-    if (response.ok) {
-      isLoggedIn.value = false
+    if (!response.ok) {
+      throw new Error(response.statusText)
     }
   } catch (error) {
     console.error(error)
   }
+  isLoggedIn.value = false
 }
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper"></div>
-  </header>
-
   <main>
     <LoginForm v-if="!isLoggedIn" v-bind:loginStatus="isLoggedIn" @authenticated="login" />
-    <SearchPage v-if="isLoggedIn" />
-    <v-btn v-if="isLoggedIn" @click="logout">Logout</v-btn>
+    <SearchPage v-if="isLoggedIn" @logout="logout" />
   </main>
 </template>
 

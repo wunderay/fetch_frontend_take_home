@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, ref, type PropType } from 'vue'
+import { computed, ref, type PropType } from 'vue'
 import type { Dog } from './definitions'
 import { mdiHeart, mdiHeartOutline } from '@mdi/js'
 
@@ -30,7 +30,7 @@ const handleClick = () => {
 
 <template>
   <v-card class="dogCard">
-    <v-img :src="dog.img" width="200" height="200" class="dog-picture align-end"> </v-img>
+    <v-img :src="dog.img" width="200" height="200" cover centered> </v-img>
     <v-card-title>{{ dog.name }}</v-card-title>
 
     <v-card-text>
@@ -46,11 +46,4 @@ const handleClick = () => {
   </v-card>
 </template>
 
-<style lang="css" scoped>
-.dog-picture {
-  object-fit: fill;
-}
-
-.dogCard {
-}
-</style>
+<style lang="css" scoped></style>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import FetchLogo from './FetchLogo.vue'
 
 defineProps(['loginStatus'])
 const emit = defineEmits(['authenticated'])
@@ -46,20 +47,36 @@ const login = async () => {
       return
     }
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
   errorMessage.value = 'Incorrect login credentials'
+}
+
+const handleClear = () => {
+  name.value = ''
+  email.value = ''
 }
 </script>
 
 <template>
-  <h1>{{ errorMessage }}</h1>
-  <v-form @submit.prevent="login">
-    <v-text-field label="Name" v-model="name" :rules="nameRules"></v-text-field>
-    <v-text-field label="Email Address" v-model="email" :rules="emailRules"></v-text-field>
-    <v-btn class="me-4" type="submit"> submit </v-btn>
-    <v-btn> clear </v-btn>
-  </v-form>
+  <FetchLogo></FetchLogo>
+  <v-container>
+    <v-form @submit.prevent="login">
+      <v-row justify="center">
+        <v-col cols="12" lg="6" align-self="center" justify="center">
+          <v-text-field label="Name" v-model="name" :rules="nameRules"></v-text-field>
+          <v-text-field label="Email Address" v-model="email" :rules="emailRules"></v-text-field>
+          <v-btn class="me-4 button" type="submit"> submit </v-btn>
+          <v-btn class="button" @click="handleClear"> clear </v-btn>
+        </v-col>
+      </v-row>
+    </v-form>
+  </v-container>
 </template>
 
-<style lang="css" scoped></style>
+<style lang="css" scoped>
+.button {
+  background-color: rgb(59, 11, 63);
+  color: white;
+}
+</style>

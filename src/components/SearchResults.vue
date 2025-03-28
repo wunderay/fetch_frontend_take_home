@@ -27,20 +27,11 @@ const getDogs = async () => {
       return resultArray
     }, [])
 
-    console.log('Array is split')
-    console.log(splitArray)
-
     dogs.value = []
     splitArray.forEach(async (dogArray) => {
       const result = await fetchDogs(dogArray)
       dogs.value = dogs.value?.concat(result)
     })
-
-    console.log('Dog array')
-
-    console.log(dogs.value)
-
-    console.log(dogs.value.length)
     return
   }
 
@@ -66,7 +57,7 @@ const fetchDogs = async (dogIDs: Array<string>) => {
 
     throw new Error(response.statusText)
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 
   return []
@@ -75,7 +66,6 @@ const fetchDogs = async (dogIDs: Array<string>) => {
 const setLocations = async (dogList: Array<Dog>) => {
   const zipCodes: Array<string> = []
   const updatedDogList = dogList
-  console.log('Location length: ' + dogList.length)
 
   updatedDogList.forEach((dog) => {
     zipCodes.push(dog.zip_code)
@@ -101,7 +91,7 @@ const setLocations = async (dogList: Array<Dog>) => {
       (dog.location = locations.find((location) => location.zip_code === dog.zip_code)),
     ])
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
   return updatedDogList
 }
@@ -120,21 +110,19 @@ watch(
 
 <template>
   <div>
-    <DogCard
-      v-for="dog in dogs"
-      :dog="dog"
-      :key="dog.id"
-      @favorited="emit(`favorited`, dog)"
-      @un-favorited="emit('unFavorited', dog)"
-    ></DogCard>
+    <v-container>
+      <v-row>
+        <v-col cols="6" md="2" v-for="dog in dogs" :key="dog.id">
+          <DogCard
+            :dog="dog"
+            :key="dog.id"
+            @favorited="emit(`favorited`, dog)"
+            @un-favorited="emit('unFavorited', dog)"
+          ></DogCard>
+        </v-col>
+      </v-row>
+    </v-container>
   </div>
 </template>
 
-<style lang="css" scoped>
-.dog-picture {
-  object-fit: fill;
-}
-
-.dogCard {
-}
-</style>
+<style lang="css" scoped></style>

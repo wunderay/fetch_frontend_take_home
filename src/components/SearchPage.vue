@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, provide, ref, shallowRef, watch } from 'vue'
-import type { Dog, SearchQuery, SearchResults } from './definitions'
+import { computed, defineAsyncComponent, ref, watch } from 'vue'
+import type { Dog, Match, SearchQuery, SearchResults } from './definitions'
 import DogCard from './DogCard.vue'
+import FetchLogo from './FetchLogo.vue'
 const SearchBar = defineAsyncComponent(() => import('@/components/SearchBar.vue'))
 const SearchResults = defineAsyncComponent(() => import('@/components/SearchResults.vue'))
+
+const emit = defineEmits(['logout'])
 
 const searchResults = ref<SearchResults>({
   resultIds: [],
@@ -43,7 +46,7 @@ const handleQuery = (query: SearchQuery) => {
   ignoreWatch = false
 }
 
-const searchDogs = async (queryParams: URLSearchParams = new URLSearchParams()) => {
+const searchDogs = async (queryParams: URLSearchParams = new URLSearchParams('size=24')) => {
   const response = await fetch(
     'https://frontend-take-home-service.fetch.com/dogs/search?' + queryParams.toString(),
     {
@@ -55,7 +58,7 @@ const searchDogs = async (queryParams: URLSearchParams = new URLSearchParams()) 
   searchResults.value = dogsFound
 }
 
-const favoriteDogs = shallowRef<Array<Dog>>([])
+const favoriteDogs = ref<Array<Dog>>([])
 
 const handleAddFavorited = (dog: Dog) => {
   favoriteDogs.value.push(dog)
@@ -63,6 +66,47 @@ const handleAddFavorited = (dog: Dog) => {
 
 const handleRemoveFavorited = (dog: Dog) => {
   favoriteDogs.value = favoriteDogs.value.filter((element) => element.id !== dog.id)
+}
+
+const loading = ref(false)
+const overlay = ref(false)
+const matchDog = ref<Dog>()
+
+const handleMatch = async () => {
+  loading.value = true
+  overlay.value = !overlay.value
+  const matchId = await fetchFavorite()
+  matchDog.value = favoriteDogs.value.find((dog) => dog.id === matchId)
+  loading.value = false
+}
+const fetchFavorite = async () => {
+  const matchIDs: Array<string> = []
+
+  favoriteDogs.value.forEach((fav) => {
+    matchIDs.push(fav.id)
+  })
+
+  try {
+    const response = await fetch('https://frontend-take-home-service.fetch.com/dogs/match', {
+      method: 'post',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(matchIDs),
+    })
+
+    if (response.ok) {
+      const dog: Match = await response.json()
+
+      return dog.match
+    }
+
+    throw new Error(response.statusText)
+  } catch (error) {
+    console.error(error)
+  }
+  return ''
 }
 
 watch(currentPage, async () => {
@@ -85,29 +129,46 @@ watch(currentPage, async () => {
 })
 
 searchDogs()
-//TODO Add favorites
 </script>
 
 <template>
+  <v-toolbar title="Fetch Adoption">
+    <template v-slot:append>
+      <v-btn @click="emit('logout')">Logout</v-btn>
+    </template>
+  </v-toolbar>
+  <FetchLogo></FetchLogo>
   <div>
     <Suspense>
       <SearchBar @query="handleQuery" />
       <template #fallback> Loading... </template>
     </Suspense>
   </div>
-  <div class="favoriteDogs">
-    <DogCard
-      v-for="dog in favoriteDogs"
-      :key="dog.id"
-      :dog="dog"
-      :favorited="true"
-      @favorited="handleAddFavorited"
-      @un-favorited="handleRemoveFavorited"
-    ></DogCard>
-  </div>
-  <v-pagination v-model="currentPage" :length="totalPages"></v-pagination>
-
+  <v-expansion-panels v-if="favoriteDogs.length > 0">
+    <v-expansion-panel title="Favorites" class="favorites">
+      <v-expansion-panel-text>
+        <v-container class="favoriteDogs">
+          <v-row>
+            <v-col cols="6" md="2" v-for="dog in favoriteDogs" :key="dog.id">
+              <DogCard :key="dog.id" :dog="dog" :favorited="true" class="favoriteDogs"></DogCard>
+            </v-col>
+          </v-row>
+          <v-row justify="center"> <v-btn @click="handleMatch" class="button">Match</v-btn> </v-row>
+        </v-container>
+      </v-expansion-panel-text>
+    </v-expansion-panel>
+    <v-overlay
+      :model-value="overlay"
+      class="align-center justify-center"
+      @click:outside="overlay = !overlay"
+    >
+      <v-progress-circular v-if="loading" color="primary" size="64" indeterminate>
+      </v-progress-circular>
+      <DogCard v-if="!loading && matchDog" :dog="matchDog" :favorited="true"></DogCard>
+    </v-overlay>
+  </v-expansion-panels>
   <div>
+    <v-pagination v-model="currentPage" :length="totalPages"></v-pagination>
     <Suspense>
       <SearchResults
         :dog-list="searchResults.resultIds"
@@ -120,4 +181,12 @@ searchDogs()
   </div>
 </template>
 
-<style lang="css" scoped></style>
+<style lang="css">
+.favorites {
+  background-color: lightyellow;
+}
+.button {
+  background-color: rgb(59, 11, 63);
+  color: white;
+}
+</style>
