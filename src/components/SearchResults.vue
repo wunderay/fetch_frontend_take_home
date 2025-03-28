@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch, watchEffect } from 'vue'
+import { ref, watch } from 'vue'
 import type { Dog, Locations } from './definitions'
+import DogCard from './DogCard.vue'
 
 const props = defineProps({
   dogList: {
@@ -29,18 +30,17 @@ const getDogs = async () => {
     console.log('Array is split')
     console.log(splitArray)
 
-    const combinedArray: Array<Dog> = []
-
+    dogs.value = []
     splitArray.forEach(async (dogArray) => {
       const result = await fetchDogs(dogArray)
-      combinedArray.push(...result)
+      dogs.value = dogs.value?.concat(result)
     })
 
-    console.log(combinedArray)
-
-    dogs.value = combinedArray
+    console.log('Dog array')
 
     console.log(dogs.value)
+
+    console.log(dogs.value.length)
     return
   }
 
@@ -75,6 +75,7 @@ const fetchDogs = async (dogIDs: Array<string>) => {
 const setLocations = async (dogList: Array<Dog>) => {
   const zipCodes: Array<string> = []
   const updatedDogList = dogList
+  console.log('Location length: ' + dogList.length)
 
   updatedDogList.forEach((dog) => {
     zipCodes.push(dog.zip_code)
@@ -105,29 +106,27 @@ const setLocations = async (dogList: Array<Dog>) => {
   return updatedDogList
 }
 
-watchEffect(async () => {
-  if (props.dogList) {
-    await getDogs()
-  }
-})
-//TODO add favorites button
+const emit = defineEmits(['favorited', 'unFavorited'])
 
-//TODO split cards into seperate component
+watch(
+  () => props.dogList,
+  async () => {
+    if (props.dogList) {
+      await getDogs()
+    }
+  },
+)
 </script>
 
 <template>
   <div>
-    <v-card v-for="dog in dogs" :key="dog.id" class="dogCard">
-      <v-img :src="dog.img" width="200" height="200" class="dog-picture align-end"> </v-img>
-      <v-card-title>{{ dog.name }}</v-card-title>
-      <v-card-subtitle class="pt-4">
-        <span>{{ dog.breed }} | </span>
-        <span>Age: {{ dog.age }}</span>
-      </v-card-subtitle>
-      <v-card-text>
-        <div>{{ dog.location?.city }}, {{ dog.location?.state }} {{ dog.zip_code }}</div>
-      </v-card-text>
-    </v-card>
+    <DogCard
+      v-for="dog in dogs"
+      :dog="dog"
+      :key="dog.id"
+      @favorited="emit(`favorited`, dog)"
+      @un-favorited="emit('unFavorited', dog)"
+    ></DogCard>
   </div>
 </template>
 
