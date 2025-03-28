@@ -164,7 +164,12 @@ searchDogs()
     >
       <v-progress-circular v-if="loading" color="primary" size="64" indeterminate>
       </v-progress-circular>
-      <DogCard v-if="!loading && matchDog" :dog="matchDog" :favorited="true"></DogCard>
+      <v-card v-if="!loading && matchDog">
+        <v-card-title>Congrats! You've been matched with</v-card-title>
+        <v-card-text>
+          <DogCard :dog="matchDog" :favorited="true"></DogCard>
+        </v-card-text>
+      </v-card>
     </v-overlay>
   </v-expansion-panels>
   <div>
